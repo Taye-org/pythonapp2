@@ -20,7 +20,7 @@ pipeline {
                 script {
                     echo "Building Docker image for branch: ${env.BRANCH_NAME}"
                     
-                    sh 'docker build -t ${DOCKER_IMAGE}:${env.BRANCH_NAME} .'
+                    def image = docker.build("${DOCKER_IMAGE}:${env.BRANCH_NAME}")
                 }
             }
         }
