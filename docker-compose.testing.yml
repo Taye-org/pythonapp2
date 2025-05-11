@@ -1,9 +1,9 @@
 version: '3'
 services:
   app:
-    image: taye97/pythonapp2:testing
+    image: taye97/pythonapp2:staging
     ports:
       - "8088:8080"
     environment:
-      - ENV=testing
+      - ENV=staging
 
