@@ -5,4 +5,4 @@ services:
     ports:
       - "8087:8080"
     environment:
-      - ENV=staging
+      - ENV=staging
