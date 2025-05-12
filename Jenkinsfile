@@ -7,7 +7,7 @@ pipeline {
         DOCKER_IMAGE = 'taye97/pythonapp2'
         TAG = "${BUILD_NUMBER}-${env.GIT_COMMIT?.take(7)}"
         VM_IP = '172.25.232.151'
-        SSH_USER = 'taye'  
+        SSH_USER = 'tayelolu'  
         SSH_KEY_PATH = '/var/jenkins_home/.ssh/id_rsa'
     }
 
