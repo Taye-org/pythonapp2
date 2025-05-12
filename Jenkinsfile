@@ -1,4 +1,5 @@
 def image = null
+def branchTag = ''
 
 pipeline {
     agent any
@@ -20,24 +21,29 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Set Tag') {
             steps {
                 script {
-                    echo "Building Docker image..."
-
-                    
-                    def branchTag = ''
                     if (env.BRANCH_NAME == 'testing') {
                         branchTag = 'testing'
                     } else if (env.BRANCH_NAME == 'staging') {
                         branchTag = 'staging'
                     } else if (env.BRANCH_NAME == 'main') {
-                        branchTag = 'latest'  
+                        branchTag = 'latest'
                     } else {
                         branchTag = "unknown-${env.BRANCH_NAME}"
                     }
 
-                    
+                    env.BRANCH_TAG = branchTag
+                    echo "Branch tag is: ${branchTag}"
+                }
+            }
+        }
+
+        stage('Build') {
+            steps {
+                script {
+                    echo "Building Docker image..."
                     image = docker.build("${DOCKER_IMAGE}:${branchTag}-${TAG}")
                 }
             }
@@ -50,7 +56,7 @@ pipeline {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'SNYK_TOKEN')]) {
                         sh """
                             snyk auth \$SNYK_TOKEN
-                            snyk test --docker ${DOCKER_IMAGE}:${TAG} --file=Dockerfile --severity-threshold=high || true
+                            snyk test --docker ${DOCKER_IMAGE}:${branchTag}-${TAG} --file=Dockerfile --severity-threshold=high || true
                         """
                     }
                 }
@@ -73,7 +79,8 @@ pipeline {
             steps {
                 script {
                     echo "Pushing Docker image to DockerHub..."
-                    image.push()
+                    image.push("${branchTag}-${TAG}")
+                    image.push(branchTag)  // Also push plain tag like :testing, :staging
                 }
             }
         }
@@ -84,25 +91,18 @@ pipeline {
                     echo "Deploying to ${env.BRANCH_NAME} environment..."
 
                     sh 'chmod 600 $SSH_KEY_PATH'
-                    
-                    def tag = ''
-                    def composeFile = ''
 
+                    def composeFile = ''
                     if (env.BRANCH_NAME == 'testing') { 
-                        tag = 'testing'
                         composeFile = '/home/tayelolu/pythonapp2/docker-compose.testing.yml'
                     } else if (env.BRANCH_NAME == 'staging') { 
-                        tag = 'staging'
                         composeFile = '/home/tayelolu/pythonapp2/docker-compose.staging.yml'
                     } else if (env.BRANCH_NAME == 'main') { 
-                        tag = 'latest'
                         composeFile = '/home/tayelolu/pythonapp2/docker-compose.yaml'
                     } else {
                         echo "Branch ${env.BRANCH_NAME} has no deployment config."
                         return
-                    } 
-
-                    env.BRANCH_TAG = tag
+                    }
 
                     sh """
                         ssh -o StrictHostKeyChecking=yes -i ${SSH_KEY_PATH} ${SSH_USER}@${VM_IP} '
@@ -110,7 +110,7 @@ pipeline {
                             git fetch origin &&
                             git checkout ${env.BRANCH_NAME} &&
                             git pull origin ${env.BRANCH_NAME} &&
-                            docker pull ${DOCKER_IMAGE}:\BRANCH_TAG &&
+                            docker pull ${DOCKER_IMAGE}:\$BRANCH_TAG &&
                             docker-compose -f ${composeFile} up -d
                         '
                     """
@@ -119,3 +119,9 @@ pipeline {
         }
     }
 }
+    
+
+        
+                    
+               
+                    
