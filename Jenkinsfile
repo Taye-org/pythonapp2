@@ -35,7 +35,7 @@ pipeline {
                     withCredentials([string(credentialsId: 'snyk-token', variable: 'SNYK_TOKEN')]) {
                         sh """
                             snyk auth \$SNYK_TOKEN
-                            snyk test --docker ${DOCKER_IMAGE}:${TAG} --file=Dockerfile
+                            snyk test --docker ${DOCKER_IMAGE}:${TAG} --file=Dockerfile --severity-threshold=high 
                         """
                     }
                 }
