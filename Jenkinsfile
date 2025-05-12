@@ -83,8 +83,10 @@ pipeline {
                     echo "Deploying to ${env.BRANCH_NAME} environment..."
 
                     sh 'chmod 600 $SSH_KEY_PATH'
-
+                    
+                    def branchTag = ''
                     def composeFile = ''
+
                     if (env.BRANCH_NAME == 'testing') {
                         composeFile = '/home/tayelolu/pythonapp2/docker-compose.testing.yml'
                     } else if (env.BRANCH_NAME == 'staging') {
@@ -102,7 +104,7 @@ pipeline {
                             git fetch origin &&
                             git checkout ${env.BRANCH_NAME} &&
                             git pull origin ${env.BRANCH_NAME} &&
-                            docker push ${DOCKER_IMAGE}:${branchTag} &&
+                            docker pull ${DOCKER_IMAGE}:${branchTag} &&
                             docker-compose -f ${composeFile} up -d
                         '
                     """
