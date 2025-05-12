@@ -1,9 +1,8 @@
 
-FROM python:3.13-slim
+FROM python:3.13-slim-bookworm
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends gcc libffi-dev && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get install -y --only-upgrade zlib1g
 
 
 
