@@ -86,7 +86,7 @@ pipeline {
 
                     
                     sh """
-                        ssh -o StrictHostKeyChecking=yes -i ${SSH_KEY_PATH} ${SSH_USER}@${VM_IP} \\
+                        ssh -o StrictHostKeyChecking=no -i ${SSH_KEY_PATH} ${SSH_USER}@${VM_IP} \\
                         'docker-compose -f ${composeFile} up -d'
                     """
                 }
