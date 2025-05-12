@@ -1,4 +1,4 @@
-def image 
+def image = null
 
 pipeline {
     agent any
