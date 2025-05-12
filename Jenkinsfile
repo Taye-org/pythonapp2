@@ -23,7 +23,21 @@ pipeline {
             steps {
                 script {
                     echo "Building Docker image..."
-                    image = docker.build("${DOCKER_IMAGE}:${TAG}")
+
+                    
+                    def branchTag = ''
+                    if (env.BRANCH_NAME == 'testing') {
+                        branchTag = 'testing'
+                    } else if (env.BRANCH_NAME == 'staging') {
+                        branchTag = 'staging'
+                    } else if (env.BRANCH_NAME == 'main') {
+                        branchTag = 'latest'  
+                    } else {
+                        branchTag = "unknown-${env.BRANCH_NAME}"
+                    }
+
+                    
+                    image = docker.build("${DOCKER_IMAGE}:${branchTag}-${TAG}")
                 }
             }
         }
@@ -82,7 +96,6 @@ pipeline {
                         return
                     }
 
-                    
                     sh """
                         ssh -o StrictHostKeyChecking=yes -i ${SSH_KEY_PATH} ${SSH_USER}@${VM_IP} '
                             cd /home/tayelolu/pythonapp2 &&
