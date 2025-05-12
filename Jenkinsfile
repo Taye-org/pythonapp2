@@ -80,7 +80,7 @@ pipeline {
                 script {
                     echo "Pushing Docker image to DockerHub..."
                     image.push("${branchTag}-${TAG}")
-                    image.push(branchTag)  // Also push plain tag like :testing, :staging
+                    image.push(branchTag)  
                 }
             }
         }
