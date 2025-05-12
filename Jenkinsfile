@@ -102,6 +102,7 @@ pipeline {
                             git fetch origin &&
                             git checkout ${env.BRANCH_NAME} &&
                             git pull origin ${env.BRANCH_NAME} &&
+                            docker pull ${DOCKER_IMAGE}:${branchTag} &&
                             docker-compose -f ${composeFile} up -d
                         '
                     """
