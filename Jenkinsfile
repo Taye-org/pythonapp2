@@ -9,6 +9,7 @@ pipeline {
         VM_IP = '172.25.232.151'
         SSH_USER = 'tayelolu'  
         SSH_KEY_PATH = '/var/jenkins_home/.ssh/id_rsa'
+        BRANCH_TAG = ''
     }
 
     stages {
@@ -84,19 +85,24 @@ pipeline {
 
                     sh 'chmod 600 $SSH_KEY_PATH'
                     
-                    def branchTag = ''
+                    def tag = ''
                     def composeFile = ''
 
-                    if (env.BRANCH_NAME == 'testing') {
+                    if (env.BRANCH_NAME == 'testing') { 
+                        tag = 'testing'
                         composeFile = '/home/tayelolu/pythonapp2/docker-compose.testing.yml'
-                    } else if (env.BRANCH_NAME == 'staging') {
+                    } else if (env.BRANCH_NAME == 'staging') { 
+                        tag = 'staging'
                         composeFile = '/home/tayelolu/pythonapp2/docker-compose.staging.yml'
-                    } else if (env.BRANCH_NAME == 'main') {
+                    } else if (env.BRANCH_NAME == 'main') { 
+                        tag = 'latest'
                         composeFile = '/home/tayelolu/pythonapp2/docker-compose.yaml'
                     } else {
                         echo "Branch ${env.BRANCH_NAME} has no deployment config."
                         return
-                    }
+                    } 
+
+                    env.BRANCH_TAG = tag
 
                     sh """
                         ssh -o StrictHostKeyChecking=yes -i ${SSH_KEY_PATH} ${SSH_USER}@${VM_IP} '
@@ -104,7 +110,7 @@ pipeline {
                             git fetch origin &&
                             git checkout ${env.BRANCH_NAME} &&
                             git pull origin ${env.BRANCH_NAME} &&
-                            docker pull ${DOCKER_IMAGE}:${branchTag} &&
+                            docker pull ${DOCKER_IMAGE}:\BRANCH_TAG &&
                             docker-compose -f ${composeFile} up -d
                         '
                     """
