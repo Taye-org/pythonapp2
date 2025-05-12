@@ -1,18 +1,24 @@
-FROM python:3.13-bullseye
 
+FROM python:3.13-slim
 
-RUN apt-get update && \
-    apt-get install -y patch dpkg dpkg-dev && \
-    apt-get upgrade -y patch dpkg dpkg-dev && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gcc libffi-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+
 COPY requirements.txt .
-RUN pip install --no-cache-dir flask
+
+
+RUN pip install --no-cache-dir -r requirements.txt
+
 
 COPY . .
 
-EXPOSE 5000
+
+EXPOSE 5000 
 
 CMD ["python", "app.py"]
