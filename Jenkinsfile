@@ -68,15 +68,13 @@ pipeline {
                 script {
                     echo "Deploying to ${env.BRANCH_NAME} environment..."
 
-                
                     sh 'chmod 600 $SSH_KEY_PATH'
 
-                    
                     def composeFile = ''
                     if (env.BRANCH_NAME == 'testing') {
                         composeFile = '/home/tayelolu/pythonapp2/docker-compose.testing.yml'
                     } else if (env.BRANCH_NAME == 'staging') {
-                        composeFile = '/home/tayelolu/pytonapp2/docker-compose.staging.yml'
+                        composeFile = '/home/tayelolu/pythonapp2/docker-compose.staging.yml'
                     } else if (env.BRANCH_NAME == 'main') {
                         composeFile = '/home/tayelolu/pythonapp2/docker-compose.yaml'
                     } else {
@@ -86,8 +84,13 @@ pipeline {
 
                     
                     sh """
-                        ssh -o StrictHostKeyChecking=yes -i ${SSH_KEY_PATH} ${SSH_USER}@${VM_IP} \\
-                        'docker-compose -f ${composeFile} up -d'
+                        ssh -o StrictHostKeyChecking=yes -i ${SSH_KEY_PATH} ${SSH_USER}@${VM_IP} '
+                            cd /home/tayelolu/pythonapp2 &&
+                            git fetch origin &&
+                            git checkout ${env.BRANCH_NAME} &&
+                            git pull origin ${env.BRANCH_NAME} &&
+                            docker-compose -f ${composeFile} up -d
+                        '
                     """
                 }
             }
