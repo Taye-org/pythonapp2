@@ -1,4 +1,4 @@
-@Library('jenkins-shared-lib') _
+@Library('jenkins-shared-library') _
 def image = null
 def branchTag = ''
 
