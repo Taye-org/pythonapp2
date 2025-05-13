@@ -34,7 +34,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    image = dockerbuild(DOCKER_IMAGE, "${branchTag}-${TAG}")
+                    image = dockerBuild(DOCKER_IMAGE, "${branchTag}-${TAG}")
                 }
             }
         }
@@ -42,7 +42,7 @@ pipeline {
         stage('Snyk Vulnerability Scan') {
             steps {
                 script {
-                    snykscan(DOCKER_IMAGE, "${branchTag}-${TAG}")
+                    snykScan(DOCKER_IMAGE, "${branchTag}-${TAG}")
                 }
             }
         }
@@ -58,7 +58,7 @@ pipeline {
         stage('Push to DockerHub') {
             steps {
                 script {
-                    dockerpush(image, "${branchTag}-${TAG}", branchTag)
+                    dockerPush(image, "${branchTag}-${TAG}", branchTag)
                 }
             }
         }
@@ -66,7 +66,7 @@ pipeline {
         stage('Deploy to VM') {
             steps {
                 script {
-                    deployvm(env.BRANCH_NAME, branchTag, VM_IP, SSH_USER, SSH_KEY_PATH, DOCKER_IMAGE)
+                    deployVm(env.BRANCH_NAME, branchTag, VM_IP, SSH_USER, SSH_KEY_PATH, DOCKER_IMAGE)
                 }
             }
         }
