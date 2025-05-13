@@ -1,4 +1,6 @@
+@Library('jenkins-shared-lib') _
 def image = null
+def branchTag = ''
 
 pipeline {
     agent any
@@ -7,93 +9,69 @@ pipeline {
         DOCKER_IMAGE = 'taye97/pythonapp2'
         TAG = "${BUILD_NUMBER}-${env.GIT_COMMIT?.take(7)}"
         VM_IP = '172.25.232.151'
-        SSH_USER = 'tayelolu'  
+        SSH_USER = 'tayelolu'
         SSH_KEY_PATH = '/var/jenkins_home/.ssh/id_rsa'
+        BRANCH_TAG = ''
     }
 
     stages {
-
         stage('Branch Name') {
             steps {
                 echo "This is branch: ${env.BRANCH_NAME}"
             }
         }
 
-        stage('Build') {
+        stage('Set Tag') {
             steps {
                 script {
-                    echo "Building Docker image..."
-                    image = docker.build("${DOCKER_IMAGE}:${TAG}")
+                    branchTag = (env.BRANCH_NAME == 'main') ? 'latest' : env.BRANCH_NAME
+                    env.BRANCH_TAG = branchTag
+                    echo "Branch tag is: ${branchTag}"
                 }
             }
         }
 
-        stage('Snyk Scan') {
+        stage('Build Docker Image') {
             steps {
                 script {
-                    echo "Scanning for vulnerabilities..."
-                    withCredentials([string(credentialsId: 'snyk-token', variable: 'SNYK_TOKEN')]) {
-                        sh """
-                            snyk auth \$SNYK_TOKEN
-                            snyk test --docker ${DOCKER_IMAGE}:${TAG} --file=Dockerfile --severity-threshold=high || true
-                        """
-                    }
+                    image = dockerbuild(DOCKER_IMAGE, "${branchTag}-${TAG}")
+                }
+            }
+        }
+
+        stage('Snyk Vulnerability Scan') {
+            steps {
+                script {
+                    snykscan(DOCKER_IMAGE, "${branchTag}-${TAG}")
                 }
             }
         }
 
         stage('Login to DockerHub') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-creds',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-                    sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
+                script {
+                    dockerlogin()
                 }
             }
         }
 
-        stage('Push') {
+        stage('Push to DockerHub') {
             steps {
                 script {
-                    echo "Pushing Docker image to DockerHub..."
-                    image.push()
+                    dockerpush(image, "${branchTag}-${TAG}", branchTag)
                 }
             }
         }
 
-        stage('Deploy to Vm') {
+        stage('Deploy to VM') {
             steps {
                 script {
-                    echo "Deploying to ${env.BRANCH_NAME} environment..."
-
-                    sh 'chmod 600 $SSH_KEY_PATH'
-
-                    def composeFile = ''
-                    if (env.BRANCH_NAME == 'testing') {
-                        composeFile = '/home/tayelolu/pythonapp2/docker-compose.testing.yml'
-                    } else if (env.BRANCH_NAME == 'staging') {
-                        composeFile = '/home/tayelolu/pythonapp2/docker-compose.staging.yml'
-                    } else if (env.BRANCH_NAME == 'main') {
-                        composeFile = '/home/tayelolu/pythonapp2/docker-compose.yaml'
-                    } else {
-                        echo "Branch ${env.BRANCH_NAME} has no deployment config."
-                        return
-                    }
-
-                    
-                    sh """
-                        ssh -o StrictHostKeyChecking=yes -i ${SSH_KEY_PATH} ${SSH_USER}@${VM_IP} '
-                            cd /home/tayelolu/pythonapp2 &&
-                            git fetch origin &&
-                            git checkout ${env.BRANCH_NAME} &&
-                            git pull origin ${env.BRANCH_NAME} &&
-                            docker-compose -f ${composeFile} up -d
-                        '
-                    """
+                    deployvm(env.BRANCH_NAME, branchTag, VM_IP, SSH_USER, SSH_KEY_PATH, DOCKER_IMAGE)
                 }
             }
         }
     }
 }
+
+
+       
