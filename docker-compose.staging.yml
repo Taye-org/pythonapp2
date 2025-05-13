@@ -3,6 +3,6 @@ services:
   app:
     image: taye97/pythonapp2:staging
     ports:
-      - "8087:8080"
+      - "8087:5000"
     environment:
       - ENV=staging
