@@ -1,11 +1,5 @@
-
-FROM python:3.13-slim-bookworm
-
-RUN apt-get update && \
-    apt-get install -y --only-upgrade zlib1g
-
-
-
+FROM  python:3.13.3-alpine3.21
+    
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir flask
