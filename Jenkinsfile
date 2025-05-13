@@ -42,7 +42,7 @@ pipeline {
         stage('Snyk Vulnerability Scan') {
             steps {
                 script {
-                    snykScan(DOCKER_IMAGE, "${branchTag}-${TAG}")
+                    snycScan(DOCKER_IMAGE, "${branchTag}-${TAG}")
                 }
             }
         }
