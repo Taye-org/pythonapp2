@@ -3,7 +3,7 @@ services:
   app:
     image: taye97/pythonapp2:testing
     ports:
-      - "8088:8080"
+      - "8088:5000"
     environment:
       - ENV=testing
 
