@@ -21,7 +21,7 @@ pipeline {
             }
         }
 
-        stage('Deploy to Vm') {
+        stage('Set Tag') {
             steps {
                 script {
                     if (env.BRANCH_NAME == 'testing') {
