@@ -116,6 +116,39 @@ pipeline {
                     """
                 }
             }
+        } 
+         stage('Deploy to Kubernetes (Main only)') {
+            when {
+                expression { env.BRANCH_NAME == 'main' }
+            }
+            steps {
+                script {
+                    echo "Deploying to Kubernetes cluster on VM..."
+
+                    sh 'chmod 600 $SSH_KEY_PATH'
+
+                    def remoteDir = "/home/${SSH_USER}/k8s"
+
+                    
+                    sh """
+                        scp -o StrictHostKeyChecking=no -r k8s \
+                        ${SSH_USER}@${VM_IP}:${remoteDir}
+                    """
+
+                    
+                    sh """
+                        ssh -o StrictHostKeyChecking=no -i ${SSH_KEY_PATH} ${SSH_USER}@${VM_IP} '
+                            cd ${remoteDir} &&
+                            sed -i "s|\\\${IMAGE_TAG}|${DOCKER_IMAGE}:${branchTag}-${TAG}|g" pythonapp2-deployment.yaml &&
+                            kubectl apply -f pythonapp2-deployment.yaml &&
+                            kubectl apply -f pythonapp2-service.yaml &&
+                            echo "Waiting for rollout..." &&
+                            kubectl rollout status deployment/pythonapp2 &&
+                            echo "Congratulations! All Complete"
+                        '
+                    """
+                }
+            }
         }
     }
 }
