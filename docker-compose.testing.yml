@@ -7,4 +7,8 @@ services:
     container_name: pythonapp_testing
     environment:
       - ENV=testing
+    networks: 
+      - testing_net
+networks:
+  testing_net:
 
