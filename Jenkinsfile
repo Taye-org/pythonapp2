@@ -39,7 +39,7 @@ pipeline {
                 }
             }
         }
-
+        /*
         stage('Build') {
             steps {
                 script {
@@ -48,7 +48,7 @@ pipeline {
                 }
             }
         }
-
+        */
         stage('Snyk Scan') {
             steps {
                 script {
