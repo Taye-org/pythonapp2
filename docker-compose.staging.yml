@@ -4,5 +4,6 @@ services:
     image: taye97/pythonapp2:staging
     ports:
       - "8087:5000"
+    container_name: pythonapp_staging
     environment:
       - ENV=staging
