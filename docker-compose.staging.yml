@@ -7,3 +7,7 @@ services:
     container_name: pythonapp_staging
     environment:
       - ENV=staging
+    networks:
+      - staging_net
+networks:
+  staging_net: 
