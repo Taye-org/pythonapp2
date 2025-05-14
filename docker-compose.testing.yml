@@ -4,6 +4,7 @@ services:
     image: taye97/pythonapp2:testing
     ports:
       - "8088:5000"
+    container_name: pythonapp_testing
     environment:
       - ENV=testing
 
