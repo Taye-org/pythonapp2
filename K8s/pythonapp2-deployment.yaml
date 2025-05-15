@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: pythonapp
-          image: taye97/pythonapp2:${IMAGE_TAG}  
+          image: ${IMAGE_TAG}  
           ports:
             - containerPort: 5000
           env:
