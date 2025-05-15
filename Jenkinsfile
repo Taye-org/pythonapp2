@@ -142,8 +142,6 @@ pipeline {
                             sed -i "s|\\\${IMAGE_TAG}|${DOCKER_IMAGE}:${branchTag}-${TAG}|g" pythonapp2-deployment.yaml &&
                             kubectl apply -f pythonapp2-deployment.yaml &&
                             kubectl apply -f pythonapp2-service.yaml &&
-                            echo "Waiting for rollout..." &&
-                            kubectl rollout status deployment/pythonapp2 &&
                             echo "Congratulations! All Complete"
                         '
                     """
