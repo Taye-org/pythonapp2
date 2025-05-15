@@ -127,11 +127,11 @@ pipeline {
 
                     sh 'chmod 600 $SSH_KEY_PATH'
 
-                    def remoteDir = "/home/${SSH_USER}/k8s"
+                    def remoteDir = "/home/${SSH_USER}/K8s"
 
                     
                     sh """
-                        scp -o StrictHostKeyChecking=no -r k8s \
+                        scp -o StrictHostKeyChecking=no -r K8s \
                         ${SSH_USER}@${VM_IP}:${remoteDir}
                     """
 
